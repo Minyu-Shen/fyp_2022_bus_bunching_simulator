@@ -30,9 +30,6 @@ class Bus(object):
         self.holding_time = None
         self.record = Travel_Record()
 
-        self.Control_Event = namedtuple(
-            "control_event", ["bus_id", "stop_id", "action"])
-
     def update_traj(self, t):
         self.record.trajectories[t] = self.loc
 

@@ -55,10 +55,6 @@ class Stop(object):
     def get_last_dpt_event(self):
         return self._record.dpt_events[-1]
 
-    def get_stop_state(self):
-        Stop_State = namedtuple("stop_state", ["pax"])
-        return Stop_State(self._pax_queue)
-
     def enter_bus(self, bus, curr_time):
         ''' Enter one bus into the stop from the upstream link '''
         # update bus's location information
@@ -73,9 +69,8 @@ class Stop(object):
         ''' stop operations during each time step'''
         self._pax_arrive(curr_time)
         self._boarding(delta_t)
-        control_events = self._leaving(curr_time)
+        self._leaving(curr_time)
         self._holding(delta_t, curr_time)
-        return control_events
 
     def _pax_arrive(self, curr_time):
         ''' randomly generate pax arrival(s) '''
@@ -96,15 +91,12 @@ class Stop(object):
                 bus.update_traj(curr_time)
                 continue
             # queue is cleared
-
-            if bus.method.name is not "no_control":
-                bus.set_hold_time(
-                    curr_time, self._record.dpt_events[-1].dpt_time,)
-
             if self._next_link is not None:
-                if bus.method.name is "no_control":
+                if bus.method is None:
                     self._next_link.enter_bus(bus, curr_time)
                 else:
+                    bus.set_hold_time(
+                        curr_time, self._record.dpt_events[-1].dpt_time,)
                     self._outside_list.append(bus)
             else:  # finished
                 bus.is_running = False
